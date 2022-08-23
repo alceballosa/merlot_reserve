@@ -4,19 +4,16 @@ Turn the merged data into some tfrecord files.
 import sys
 
 sys.path.append("../../")
-import argparse
+
 import colorsys
 import hashlib
-import io
 import json
 import os
 import random
 from collections import defaultdict
 from copy import deepcopy
-from tempfile import TemporaryDirectory
 
 import numpy as np
-import pandas as pd
 import regex as re
 import tensorflow as tf
 from finetune.common_data_utils import *
@@ -24,7 +21,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 # from google.cloud import storage
 from sacremoses import MosesDetokenizer
-from tqdm import tqdm
 
 parser = create_base_parser()
 parser.add_argument(
