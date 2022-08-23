@@ -16,7 +16,7 @@ from copy import deepcopy
 
 from PIL import Image, ImageDraw, ImageFont
 import tensorflow as tf
-from google.cloud import storage
+#from google.cloud import storage
 from sacremoses import MosesDetokenizer
 import regex as re
 from tqdm import tqdm
@@ -30,7 +30,7 @@ parser = create_base_parser()
 parser.add_argument(
     '-data_dir',
     dest='data_dir',
-    default='/home/rowan/datasets2/vcr1',
+    default='/work/vig/Datasets/vcr',
     type=str,
     help='Image directory.'
 )
