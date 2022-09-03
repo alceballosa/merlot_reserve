@@ -72,7 +72,7 @@ config['data']['num_answers'] = 4
 config['device']['batch_size'] = 16
 config['device']['prefetch_size'] = 0
 config['device']['n_fns_per_cycle'] = 8
-config['data']['val_fns'] = "${your_path}/test{:03d}of008.tfrecord"
+config['data']['val_fns'] = "/home/alberto/workspace/datasets/mreserve-storage/vcr/val{:03d}of008.tfrecord"
 config['data']['num_val_files'] = 8
 config['data']['do_random_scale'] = False
 config['data']['lang_seq_len'] = 140
@@ -134,7 +134,7 @@ for ids, batch in tqdm(val_iter):
         if id_i == 'pad':
             continue
         annot_id = '-'.join(id_i.split('-')[:2])
-        conditionee = id_i.split('_')[-1]
+        conditionee = id_i.split('-')[-1]
         sub_dict = {f'answer_{i}': p_i[0,i] for i in range(4)}
         for i in range(4):
             sub_dict[f'rationale_conditioned_on_{conditionee}_{i}'] = p_i[1,i]

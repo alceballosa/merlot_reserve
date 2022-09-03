@@ -35,11 +35,14 @@ Create the environment:
 
 ```bash
 conda create --name mreserve python=3.8 && conda activate mreserve
-conda install -y python=3.8 tqdm numpy pyyaml scipy ipython cython typing h5py pandas matplotlib cudatoolkit=11.4
+conda install -y python=3.8 tqdm numpy pyyaml scipy ipython cython typing h5py pandas matplotlib
+conda install -y -c nvidia cudatoolkit-dev=11.4
 
 # Install jax
+
 # pip install 'jax[cuda11_cudnn82]' -f https://storage.googleapis.com/jax-releases/jax_releases.html
-pip install 'jax[cuda114]' -f https://storage.googleapis.com/jax-releases/jax_releases.html
+# pip install 'jax[cuda114]' -f https://storage.googleapis.com/jax-releases/jax_releases.html
+
 # If doing this on TPUs instead of locally...
 # pip install "jax[tpu]>=0.2.18" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
@@ -47,8 +50,13 @@ pip install 'jax[cuda114]' -f https://storage.googleapis.com/jax-releases/jax_re
 pip uninstall numpy
 pip install numpy==1.19.5
 
-pip install -r requirements.txt
+pip install -r requirements
+pip install "jax[cuda11_cudnn82]<=0.3.10" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install "flax<=0.5.3"
+pip install wandb
 ```
+
+Follow this guide: [https://github.com/google/jax#installation](https://github.com/google/jax#installation)
 
 You can then try out the interactive script at [demo/demo_video.py](demo/demo_video.py). It will handle downloading the model checkpoint for you.
 
@@ -79,4 +87,10 @@ gs://merlotreserve/finetune_data/tvqa/
 
 # VCR data
 gs://merlotreserve/finetune_data/vcr/
+```
+
+Otherwise, download as:
+
+```bash
+gcloud alpha storage cp gs://{name} ./
 ```
