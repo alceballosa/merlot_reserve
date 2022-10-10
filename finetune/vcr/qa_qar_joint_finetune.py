@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 from pretrain.dataloader import input_fn_builder, MASK, encoder
 from finetune.common_dataloader import finetune_input_fn_builder, finetune_val_input_fn_builder
-from mreserve.modeling import MerlotReserve
+from mreserve.modeling import MerlotReserve, PretrainedMerlotReserve
 
 from flax.training import train_state
 from flax import jax_utils
@@ -93,7 +93,10 @@ with open(args.pretrain_config_file, 'r') as f:
     config = yaml.load(f, yaml.FullLoader)
 
 
-config['data']['train_fns'] = "${your_path}/" + args.data_name + "/train{:03d}of256.tfrecord"
+config["data"]["train_fns"] = (
+    "/home/alberto/workspace/datasets/mreserve-storage/vcr"
+    + "/train{:03d}of256.tfrecord"
+)
 config['data']['num_train_files'] = 256
 config['data']['num_answers'] = 4
 config['data']['random_scale_max'] = 1.1
@@ -122,7 +125,7 @@ config['data']['lang_seq_len'] = 144
 cfg_name = args.pretrain_config_file.split('/')[-1]
 seattle_time = pytz.utc.localize(datetime.utcnow()).astimezone(pytz.timezone('America/Los_Angeles'))
 seattle_time = seattle_time.strftime("%Y-%m-%d-%H:%M.%S")
-config['device']['output_dir'] = f'your_path/{args.data_name}/{cfg_name}/'
+config['device']['output_dir'] = f'/home/alberto/workspace/datasets/mreserve-storage/ckpts/{args.data_name}/{cfg_name}/'
 if args.output_name != '':
     config['device']['output_dir'] = os.path.join(config['device']['output_dir'], args.output_name)
 config['device']['output_dir'] = os.path.join(config['device']['output_dir'], seattle_time)
@@ -169,7 +172,7 @@ class MerlotReserveVCR(MerlotReserve):
         logits = self.proj(pooled_h).reshape([batch_size, 2, num_ans_per])
         return logits
 
-
+# model = PretrainedMerlotReserve.from_pretrained(model_name = "large", image_grid_size = (12,20))
 model = MerlotReserveVCR.from_config(config)
 
 if args.ckpt == '':

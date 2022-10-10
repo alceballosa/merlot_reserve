@@ -1,17 +1,20 @@
 import sys
-sys.path.append('../')
+
+sys.path.append("../")
+import argparse
+import os
+import random
+from io import BytesIO
+from tempfile import TemporaryDirectory
+
+import numpy as np
 import tensorflow as tf
 from google.cloud import storage
-from tempfile import TemporaryDirectory
-import os
 from mreserve.lowercase_encoder import get_encoder
-import argparse
 from PIL import Image
-import numpy as np
-from io import BytesIO
-import random
 
 encoder = get_encoder()
+
 
 class GCSTFRecordWriter(object):
     def __init__(self, fn, auto_close=False, options=None):
@@ -23,11 +26,15 @@ class GCSTFRecordWriter(object):
         :param buffer_size:
         """
         self.fn = fn
-        if fn.startswith('gs://'):
+        if fn.startswith("gs://"):
             self.gclient = storage.Client()
             self.storage_dir = TemporaryDirectory()
-            self.writer = tf.io.TFRecordWriter(os.path.join(self.storage_dir.name, 'temp.tfrecord'), options=options)
-            self.bucket_name, self.file_name = self.fn.split('gs://', 1)[1].split('/', 1)
+            self.writer = tf.io.TFRecordWriter(
+                os.path.join(self.storage_dir.name, "temp.tfrecord"), options=options
+            )
+            self.bucket_name, self.file_name = self.fn.split("gs://", 1)[1].split(
+                "/", 1
+            )
 
         else:
             self.gclient = None
@@ -35,7 +42,7 @@ class GCSTFRecordWriter(object):
             self.file_name = None
             self.storage_dir = None
             self.writer = tf.io.TFRecordWriter(fn, options=options)
-        self.auto_close=auto_close
+        self.auto_close = auto_close
 
     def write(self, x):
         self.writer.write(x)
@@ -46,7 +53,9 @@ class GCSTFRecordWriter(object):
             print("UPLOADING!!!!!", flush=True)
             bucket = self.gclient.get_bucket(self.bucket_name)
             blob = bucket.blob(self.file_name)
-            blob.upload_from_filename(os.path.join(self.storage_dir.name, 'temp.tfrecord'))
+            blob.upload_from_filename(
+                os.path.join(self.storage_dir.name, "temp.tfrecord")
+            )
             self.storage_dir.cleanup()
 
     def __enter__(self):
@@ -112,6 +121,7 @@ def get_size_for_resize(image_size, shorter_size_trg=384, longer_size_max=512):
         ow = int(size * w / h)
     return ow, oh
 
+
 def resize_image(image, shorter_size_trg=384, longer_size_max=512):
     """
     Resize image such that the longer size is <= longer_size_max.
@@ -121,11 +131,13 @@ def resize_image(image, shorter_size_trg=384, longer_size_max=512):
     :param shorter_size_trg:
     :param longer_size_max:
     """
-    trg_size = get_size_for_resize(image.size, shorter_size_trg=shorter_size_trg,
-                                       longer_size_max=longer_size_max)
+    trg_size = get_size_for_resize(
+        image.size, shorter_size_trg=shorter_size_trg, longer_size_max=longer_size_max
+    )
     if trg_size != image.size:
         return image.resize(trg_size, resample=Image.BICUBIC)
     return image
+
 
 def pil_image_to_jpgstring(image: Image, quality=95):
     """
@@ -133,45 +145,33 @@ def pil_image_to_jpgstring(image: Image, quality=95):
     :return: it, as a jpg string
     """
     with BytesIO() as output:
-        image.save(output, format='JPEG', quality=quality, optimize=True)
+        image.save(output, format="JPEG", quality=quality, optimize=True)
         return output.getvalue()
 
 
 def create_base_parser():
-    parser = argparse.ArgumentParser(description='SCRAPE!')
+    parser = argparse.ArgumentParser(description="SCRAPE!")
     parser.add_argument(
-        '-fold',
-        dest='fold',
-        default=0,
-        type=int,
-        help='which fold we are on'
+        "-fold", dest="fold", default=0, type=int, help="which fold we are on"
     )
     parser.add_argument(
-        '-num_folds',
-        dest='num_folds',
+        "-num_folds",
+        dest="num_folds",
         default=1,
         type=int,
-        help='Number of folds (corresponding to both the number of training files and the number of testing files)',
+        help="Number of folds (corresponding to both the number of training files and the number of testing files)",
     )
     parser.add_argument(
-        '-seed',
-        dest='seed',
-        default=1337,
-        type=int,
-        help='which seed to use'
+        "-seed", dest="seed", default=1337, type=int, help="which seed to use"
     )
     parser.add_argument(
-        '-split',
-        dest='split',
-        default='train',
+        "-split", dest="split", default="train", type=str, help="which split to use"
+    )
+    parser.add_argument(
+        "-base_fn",
+        dest="base_fn",
+        default="gs://replace_with_your_path/",
         type=str,
-        help='which split to use'
-    )
-    parser.add_argument(
-        '-base_fn',
-        dest='base_fn',
-        default='gs://replace_with_your_path/',
-        type=str,
-        help='Base filename to use. You can start this with gs:// and we\'ll put it on google cloud.'
+        help="Base filename to use. You can start this with gs:// and we'll put it on google cloud.",
     )
     return parser
